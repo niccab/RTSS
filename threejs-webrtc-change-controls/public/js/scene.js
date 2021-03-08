@@ -31,7 +31,7 @@ class Scene {
 
 
 
-
+      
     //Utility
     this.width = window.innerWidth;
     this.height = window.innerHeight - 100;
@@ -70,8 +70,8 @@ class Scene {
     window.addEventListener("keyup", (e) => this.onKeyUp(e), false);
 
     // Helpers
-    this.scene.add(new THREE.GridHelper(500, 500));
-    this.scene.add(new THREE.AxesHelper(10));
+    //this.scene.add(new THREE.GridHelper(500, 500));
+    //this.scene.add(new THREE.AxesHelper(10));
 
     this.addLights();
     createEnvironment(this.scene);
@@ -81,11 +81,11 @@ class Scene {
 
     // Add Controls for the scene
     // Option 1: our third person player controls:
-    // this.controls = new THREE.PlayerControls(this.camera, this.playerGroup);
+     this.controls = new THREE.PlayerControls(this.camera, this.playerGroup);
 
     // Option 2: using map controls:
-    this.controls = new THREE.MapControls(
-      this.camera,
+   // this.controls = new THREE.MapControls(
+    /*  this.camera,
       this.renderer.domElement
     );
 
@@ -98,6 +98,7 @@ class Scene {
     this.controls.maxDistance = 500;
 
     this.controls.maxPolarAngle = Math.PI / 2;
+    */
 
     // Start the update loop
     this.update();
