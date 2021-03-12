@@ -125,14 +125,36 @@ class Scene {
   addSelf() {
     let videoMaterial = makeVideoMaterial("local");
 
-    let _head = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 1), videoMaterial);
+      let _head = new THREE.Mesh(new THREE.SphereGeometry(1, 1, 1), videoMaterial);
+
+      const hsphere = new THREE.SphereGeometry(0.5, 16, 8);
+      var customMaterial = new THREE.ShaderMaterial(
+          {
+              uniforms:
+              {
+                  "c": { type: "f", value: 3.0 },
+                  "p": { type: "f", value: 1.4 },
+                  glowColor: { type: "c", value: new THREE.Color(0xffff00) },
+                  viewVector: { type: "v3", value: new THREE.Vector3() }
+              },
+              vertexShader: document.getElementById('vertexShader').textContent,
+              fragmentShader: document.getElementById('fragmentShader').textContent,
+              side: THREE.FrontSide,
+              blending: THREE.AdditiveBlending,
+              transparent: false
+          });
+
+      let hglow = new THREE.Mesh(hsphere.clone(), customMaterial.clone());
+      hglow.scale.multiplyScalar(3.2);
+      hglow.position.set(0, 1.5, 0);
 
     _head.position.set(0, 1.5, 0);
 
     // https://threejs.org/docs/index.html#api/en/objects/Group
     this.playerGroup = new THREE.Group();
     this.playerGroup.position.set(0, 0.5, 0);
-    this.playerGroup.add(_head);
+      this.playerGroup.add(_head);
+      this.playerGroup.add(hglow);
 
     // add group to scene
     this.scene.add(this.playerGroup);
@@ -142,7 +164,10 @@ class Scene {
   addClient(_id) {
     let videoMaterial = makeVideoMaterial(_id);
 
-    let _head = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 1), videoMaterial);
+      let _head = new THREE.Mesh(new THREE.SphereGeometry(1, 1, 1), videoMaterial);
+
+
+
 
     // set position of head before adding to parent object
 
@@ -150,7 +175,8 @@ class Scene {
 
     // https://threejs.org/docs/index.html#api/en/objects/Group
     var group = new THREE.Group();
-    group.add(_head);
+      group.add(_head);
+      group.add(hglow);
 
     // add group to scene
     this.scene.add(group);
@@ -299,6 +325,9 @@ class Scene {
     requestAnimationFrame(() => this.update());
     this.frameCount++;
 
+      glow.material.uniforms.viewVector.value =
+          new THREE.Vector3().subVectors(this.camera.position, glow.position);
+
     updateEnvironment(this.scene);
 
     if (this.frameCount % 25 === 0) {
@@ -313,7 +342,9 @@ class Scene {
 
   render() {
     this.renderer.render(this.scene, this.camera);
-  }
+    }
+
+
 
   //////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////

@@ -11,8 +11,38 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js" integrity="sha512-oFOCo2/3DtjrJG4N27BjSLQWoiBv171sK6a+JiWjp/7agxC2nCUP358AqzxkBUb5jX8g6CYLPdSKQTbC0weCwA==" crossorigin="anonymous"></script>
 
 	<script src="js/libs/three.min.js"></script>
+	<script src="js/libs/soundmeter.js"></script>
 	<script src="js/libs/playerControls.js"></script>
 	<script src="js/libs/OrbitControls.js"></script>
+
+	<!-- ---------------- Custom Shader Code ------------------------ -->
+	<script id="vertexShader" type="x-shader/x-vertex">
+		uniform vec3 viewVector;
+		uniform float c;
+		uniform float p;
+		varying float intensity;
+		void main()
+		{
+			vec3 vNormal = normalize( normalMatrix * normal );
+			vec3 vNormel = normalize( normalMatrix * viewVector );
+			intensity = pow( c - dot(vNormal, vNormel), p );
+
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+		}
+	</script>
+
+	<!-- fragment shader a.k.a. pixel shader -->
+	<script id="fragmentShader" type="x-shader/x-vertex">
+		uniform vec3 glowColor;
+		varying float intensity;
+		void main()
+		{
+			vec3 glow = glowColor * intensity;
+			gl_FragColor = vec4( glow, 1.0 );
+		}
+	</script>
+	<!-- ----------------------------------------------------------- -->
+
 
 	<script src="js/environment.js"></script>
 	<script src="js/scene.js"></script>

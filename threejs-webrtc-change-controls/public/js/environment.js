@@ -4,6 +4,8 @@ let floor;
 let moon;
 let water;
 let light1;
+let glow;
+
 
 
 
@@ -20,11 +22,36 @@ function createEnvironment(scene) {
 
 	const c1 = 0xff0040;
 
-	const sphere = new THREE.SphereGeometry(0.25, 16, 8);
+	const sphere = new THREE.SphereGeometry(0.5, 16, 8);
 
 	light1 = new THREE.PointLight(c1, intensity, distance, decay);
-	light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: c1 })));
-	scene.add(light1);
+	light1.add(new THREE.Mesh(sphere, new THREE.MeshPhongMaterial({ })));
+	//scene.add(light1);
+	//light1.position.set(0, 3, 0);
+
+	// create custom material from the shader code above
+	//   that is within specially labeled script tags
+	var customMaterial = new THREE.ShaderMaterial(
+		{
+			uniforms:
+			{
+				"c": { type: "f", value: 1.0 },
+				"p": { type: "f", value: 1.4 },
+				glowColor: { type: "c", value: new THREE.Color(0xffff00) },
+				viewVector: { type: "v3", value: new THREE.Vector3()}
+			},
+			vertexShader: document.getElementById('vertexShader').textContent,
+			fragmentShader: document.getElementById('fragmentShader').textContent,
+			side: THREE.FrontSide,
+			blending: THREE.AdditiveBlending,
+			transparent: true
+		});
+
+	glow = new THREE.Mesh(sphere.clone(), customMaterial.clone());
+	glow.position.y = 5;
+	glow.scale.multiplyScalar(3.2);
+	scene.add(glow);
+
 
     /*const geometry = new THREE.PlaneGeometry(100, 100, 100);
     const material = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
@@ -93,6 +120,7 @@ function addLights(scene) {
 	light1 = new THREE.PointLight(c1, intensity, distance, decay);
 	light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: c1 })));
 	scene.add(light1);
+
 
 	const dlight = new THREE.DirectionalLight(0xffffff, 0.05);
 	dlight.position.set(0.5, 1, 0).normalize();
