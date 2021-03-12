@@ -142,5 +142,11 @@ function setupSocketServer() {
         candidate: data.candidate,
       });
     });
+
+      client.on('addShape', function (data) {
+          console.log(data);
+
+          io.sockets.emit("addShape", data);
+      });
   });
 }

@@ -109,10 +109,14 @@ class Scene {
   // Lighting 💡
 
   addLights() {
-      this.scene.add(new THREE.DirectionalLight(0xffffe6, 0.7));
+      //this.scene.add(new THREE.DirectionalLight(0xffffe6, 0.7));
       //this.scene.add(new THREE.Pointight(0xff0000, 1, 100));
       //light.position.set(.5, .5, .5);
-  }
+    }
+
+    addFog() {
+        this.scene.fog = new THREE.Fog(0x040306, 10, 300);
+    }
 
   //////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////
@@ -250,6 +254,17 @@ class Scene {
     ];
   }
 
+    addShape(pos) {
+        let geo = new THREE.BoxGeometry(1, 2, 3);
+        let mat = new THREE.MeshPhongMaterial();
+
+        let mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(pos[0], pos[1], pos[2]);
+
+        this.scene.add(mesh);
+    }
+
+
     /*
     setupRaycaster() {
         this.raycaster = new THREE.Raycaster();
@@ -320,8 +335,16 @@ class Scene {
 
   onKeyUp(event) {
     event = event || window.event;
-    this.keyState[event.keyCode || event.which] = false;
+      this.keyState[event.keyCode || event.which] = false;
+
+
+      if (event.keyCode == 32) {
+          console.log('send message');
+          socket.emit('addShape', { position: [this.playerGroup.x, this.playerGroup.y, this.playerGroup.z] });
   }
+
+
+}
 }
 
 //////////////////////////////////////////////////////////////////////

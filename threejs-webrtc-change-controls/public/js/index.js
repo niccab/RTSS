@@ -192,6 +192,10 @@ function initSocketConnection() {
   socket.on("iceCandidateFound", (data) => {
     clients[data.socket].peerConnection.addIceCandidate(data.candidate);
   });
+
+    socket.on("addShape", function (data) {
+        console.log('got addShape message:', data);
+    })
 }
 
 ////////////////////////////////////////////////////////////////////////////////

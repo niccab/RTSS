@@ -3,16 +3,28 @@ let wall;
 let floor;
 let moon;
 let water;
+let light1;
+
 
 
 
 function createEnvironment(scene) {
-    console.log("Adding environment");
+	console.log("Adding environment");
+	addWater(scene);
 	//loadModel(scene);
 	//loadFbx(scene);
 
-	const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-	scene.add(directionalLight);
+	const intensity = 2.5;
+	const distance = 100;
+	const decay = 2.0;
+
+	const c1 = 0xff0040;
+
+	const sphere = new THREE.SphereGeometry(0.25, 16, 8);
+
+	light1 = new THREE.PointLight(c1, intensity, distance, decay);
+	light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: c1 })));
+	scene.add(light1);
 
     /*const geometry = new THREE.PlaneGeometry(100, 100, 100);
     const material = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
@@ -59,7 +71,7 @@ function createEnvironment(scene) {
 	moon.position.set(20, 13, 5);
 	scene.add(moon);
 
-	addWater(scene);
+	//addLights(scene);
 
 }
 
@@ -68,6 +80,25 @@ function updateEnvironment(scene) {
 	water.material.uniforms['time'].value += 1.0 / 60.0;
 }
 
+
+function addLights(scene) {
+
+	const intensity = 2.5;
+	const distance = 100;
+	const decay = 2.0;
+
+	const c1 = 0xff0040;
+	const sphere = new THREE.SphereGeometry(0.25, 16, 8);
+
+	light1 = new THREE.PointLight(c1, intensity, distance, decay);
+	light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: c1 })));
+	scene.add(light1);
+
+	const dlight = new THREE.DirectionalLight(0xffffff, 0.05);
+	dlight.position.set(0.5, 1, 0).normalize();
+	scene.add(dlight);
+
+}
 
 function addWater(scene) {
 	// Water
@@ -79,7 +110,7 @@ function addWater(scene) {
 		{
 			textureWidth: 512,
 			textureHeight: 512,
-			waterNormals: new THREE.TextureLoader().load('../assets/waternormals.jpeg', function (texture) {
+			waterNormals: new THREE.TextureLoader().load('../assets/textures/waternormals.jpeg', function (texture) {
 
 				texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
