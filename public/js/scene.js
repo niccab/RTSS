@@ -145,7 +145,7 @@ class Scene {
           });
 
       let hglow = new THREE.Mesh(hsphere.clone(), customMaterial.clone());
-      hglow.scale.multiplyScalar(3.2);
+      hglow.scale.set(3.2, 3.2, 3.2);
       hglow.position.set(0, 1.5, 0);
 
     _head.position.set(0, 1.5, 0);
@@ -306,7 +306,7 @@ class Scene {
                 transparent: false
             });
 
-        let hglow = new THREE.Mesh(hsphere.clone(), customMaterial.clone());
+        let hglow = new THREE.Mesh(hsphere, customMaterial);
         hglow.scale.multiplyScalar(3.2);
         hglow.position.set(pos[0], pos[1], pos[2]);
         this.scene.add(hglow);
@@ -392,7 +392,7 @@ class Scene {
 
 
       if (event.keyCode == 32) {
-          console.log('send message');
+          console.log('be the light');
           socket.emit('addShape', { position: [this.playerGroup.position.x, this.playerGroup.position.y, this.playerGroup.position.z] });
   }
 

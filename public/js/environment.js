@@ -3,27 +3,68 @@
  */
 
 let myMesh;
-let wall;
-let floor;
 let moon;
 let water;
-let light1;
 let glow;
-//let radiate;
 let radiating;
 let glowValue;
 let time;
 let d;
 
+
+/*'use strict';
+
+const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
+startButton.onclick = start;
+stopButton.onclick = stop;
+
+const instantMeter = document.querySelector('#instant meter');
+const slowMeter = document.querySelector('#slow meter');
+const clipMeter = document.querySelector('#clip meter');
+
+const instantValueDisplay = document.querySelector('#instant .value');
+const slowValueDisplay = document.querySelector('#slow .value');
+const clipValueDisplay = document.querySelector('#clip .value');
+
+// Put variables in global scope to make them available to the browser console.
+const constraints = window.constraints = {
+	audio: true,
+	video: true
+};
+
+let meterRefresh = null;
+*/
+
 function createEnvironment(scene) {
 	console.log("Adding environment");
-	THREE.RectAreaLightUniformsLib.init();
 
-	rectLights = createLights()
-	rectLights.forEach(light => scene.add(light))
 	addWater(scene);
 
+	THREE.RectAreaLightUniformsLib.init();
+	rectLights = createLights()
+	rectLights.forEach(light => scene.add(light))
 
+	glorb(scene);
+
+	//Create moon
+	let moonGeometry = new THREE.SphereGeometry(3, 12, 12);
+	let moontexture = new THREE.TextureLoader().load("../assets/textures/moon.jpg");
+	let moonMaterial = new THREE.MeshBasicMaterial({ map: moontexture });
+	moon = new THREE.Mesh(moonGeometry, moonMaterial);
+	moon.position.set(20, 13, 5);
+	scene.add(moon);
+}
+
+function updateEnvironment(scene) {
+  // myMesh.position.x += 0.01;
+	water.material.uniforms['time'].value += 1.0 / 60.0;
+	radiate(5);
+	//console.log(instantValueDisplay.innerText);
+
+}
+
+function glorb(scene) {
 	//Create glowing orb
 	const sphere = new THREE.SphereGeometry(0.5, 16, 8);
 
@@ -34,7 +75,7 @@ function createEnvironment(scene) {
 				"c": { type: "f", value: 1.0 },
 				"p": { type: "f", value: 1.4 },
 				glowColor: { type: "c", value: new THREE.Color(0xffff00) },
-				viewVector: { type: "v3", value: new THREE.Vector3()}
+				viewVector: { type: "v3", value: new THREE.Vector3() }
 			},
 			vertexShader: document.getElementById('vertexShader').textContent,
 			fragmentShader: document.getElementById('fragmentShader').textContent,
@@ -42,44 +83,21 @@ function createEnvironment(scene) {
 			blending: THREE.AdditiveBlending,
 			transparent: true
 		});
-
-	time = Date.now() * 0.0025;
-	d = 10;
-
-	glowValue = Math.sin(time * 0.1) * d;
-
+	
 	glow = new THREE.Mesh(sphere.clone(), customMaterial.clone());
-	glow.position.y = 5;
-	glow.scale.multiplyScalar(glowValue);
 	scene.add(glow);
-	console.log(glowValue);
-
-
-	//Create moon
-	let moonGeometry = new THREE.SphereGeometry(3, 12, 12);
-	let moontexture = new THREE.TextureLoader().load("../assets/textures/moon.jpg");
-	let moonMaterial = new THREE.MeshBasicMaterial({ map: moontexture });
-	moon = new THREE.Mesh(moonGeometry, moonMaterial);
-	moon.position.set(20, 13, 5);
-	scene.add(moon);
-
 
 }
 
-function updateEnvironment(scene) {
-  // myMesh.position.x += 0.01;
-	water.material.uniforms['time'].value += 1.0 / 60.0;
-	radiate(5);
-	//scene.add(glow);
-
-
-}
 
 function radiate(radiating) {
 	const time = Date.now() * 0.0025;
 	const d = radiating;
+	const growth = Math.abs(Math.sin(time * 0.1) * d);
 
-	glowValue = Math.sin(time * 0.1) * d;
+	glow.position.y = 1.5;
+	glow.scale.set(growth, growth, growth);
+
 }
 
 
@@ -117,31 +135,11 @@ function createLights() {
 		const z = radius * Math.sin(a)
 		const y = h * 0.5 + 0.5
 
-		lights[i] = createRectangularLight(0xffffff, .5, w, h, [x, y, z], [0, y, 0])
+		lights[i] = createRectangularLight(0xff0000, 0, w, h, [x, y, z], [0, y, 0])
 
 	}
 
 	return lights
-
-}
-
-function addLights(scene) {
-
-	const intensity = 2.5;
-	const distance = 100;
-	const decay = 2.0;
-
-	const c1 = 0xff0040;
-	const sphere = new THREE.SphereGeometry(0.25, 16, 8);
-
-	light1 = new THREE.PointLight(c1, intensity, distance, decay);
-	light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: c1 })));
-	scene.add(light1);
-
-
-	const dlight = new THREE.DirectionalLight(0xffffff, 0.05);
-	dlight.position.set(0.5, 1, 0).normalize();
-	scene.add(dlight);
 
 }
 
@@ -173,8 +171,7 @@ function addWater(scene) {
 	water.rotation.x = - Math.PI / 2;
 	scene.add(water);
 }
-
-
+/*
 function loadModel(scene) {
 	const onProgress = function (xhr) {
 
@@ -239,7 +236,64 @@ function loadFbx(scene) {
 }
 
 
+function handleSuccess(stream) {
+	// Put variables in global scope to make them available to the
+	// browser console.
+	window.stream = stream;
+	const soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
+	soundMeter.connectToSource(stream, function (e) {
+		if (e) {
+			alert(e);
+			return;
+		}
+		meterRefresh = setInterval(() => {
+			instantMeter.value = instantValueDisplay.innerText =
+				soundMeter.instant.toFixed(2);
+			slowMeter.value = slowValueDisplay.innerText =
+				soundMeter.slow.toFixed(2);
+			clipMeter.value = clipValueDisplay.innerText =
+				soundMeter.clip;
+		}, 200);
+	});
+}
 
+function handleError(error) {
+	console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
+}
+
+
+function start(scene) {
+	console.log('Requesting local stream');
+	startButton.disabled = true;
+	stopButton.disabled = false;
+
+	try {
+		window.AudioContext = window.AudioContext || window.webkitAudioContext;
+		window.audioContext = new AudioContext();
+	} catch (e) {
+		alert('Web Audio API not supported.');
+	}
+
+	navigator.mediaDevices
+		.getUserMedia(constraints)
+		.then(handleSuccess)
+		.catch(handleError);
+}
+
+function stop(scene) {
+	console.log('Stopping local stream');
+	startButton.disabled = false;
+	stopButton.disabled = true;
+
+	window.stream.getTracks().forEach(track => track.stop());
+	window.soundMeter.stop();
+	clearInterval(meterRefresh);
+	instantMeter.value = instantValueDisplay.innerText = '';
+	slowMeter.value = slowValueDisplay.innerText = '';
+	clipMeter.value = clipValueDisplay.innerText = '';
+}
+
+*/
 
 /*    for (let i = 0; i < 10; i++) {
 		let texture = new THREE.TextureLoader().load("../assets/texture.png");
