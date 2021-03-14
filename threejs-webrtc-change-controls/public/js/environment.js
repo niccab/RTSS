@@ -1,3 +1,7 @@
+/*
+ * Special thanks to Vibert Thio and Alvaro Lacouture for portions of this code, especially lighting references
+ */
+
 let myMesh;
 let wall;
 let floor;
@@ -5,32 +9,24 @@ let moon;
 let water;
 let light1;
 let glow;
-
-
-
-
+//let radiate;
+let radiating;
+let glowValue;
+let time;
+let d;
 
 function createEnvironment(scene) {
 	console.log("Adding environment");
+	THREE.RectAreaLightUniformsLib.init();
+
+	rectLights = createLights()
+	rectLights.forEach(light => scene.add(light))
 	addWater(scene);
-	//loadModel(scene);
-	//loadFbx(scene);
 
-	const intensity = 2.5;
-	const distance = 100;
-	const decay = 2.0;
 
-	const c1 = 0xff0040;
-
+	//Create glowing orb
 	const sphere = new THREE.SphereGeometry(0.5, 16, 8);
 
-	light1 = new THREE.PointLight(c1, intensity, distance, decay);
-	light1.add(new THREE.Mesh(sphere, new THREE.MeshPhongMaterial({ })));
-	//scene.add(light1);
-	//light1.position.set(0, 3, 0);
-
-	// create custom material from the shader code above
-	//   that is within specially labeled script tags
 	var customMaterial = new THREE.ShaderMaterial(
 		{
 			uniforms:
@@ -47,50 +43,19 @@ function createEnvironment(scene) {
 			transparent: true
 		});
 
+	time = Date.now() * 0.0025;
+	d = 10;
+
+	glowValue = Math.sin(time * 0.1) * d;
+
 	glow = new THREE.Mesh(sphere.clone(), customMaterial.clone());
 	glow.position.y = 5;
-	glow.scale.multiplyScalar(3.2);
+	glow.scale.multiplyScalar(glowValue);
 	scene.add(glow);
+	console.log(glowValue);
 
 
-    /*const geometry = new THREE.PlaneGeometry(100, 100, 100);
-    const material = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
-    floor = new THREE.Mesh(geometry, material);
-	floor.position.set(0, .01, 0);
-	floor.rotation.x = THREE.Math.degToRad(90);
-	scene.add(floor);
-
-	floor = new THREE.Mesh(geometry, material);
-	floor.position.set(0, 10, 0);
-	floor.rotation.x = THREE.Math.degToRad(90);
-	scene.add(floor); 
-
-	let myGeometry = new THREE.PlaneGeometry(50, 10, 10);
-	let texture = new THREE.TextureLoader().load("../assets/textures/gradient.jpg");
-	let myMaterial = new THREE.MeshBasicMaterial({ map: texture });
-	wall = new THREE.Mesh(myGeometry, myMaterial);
-	wall.position.set(25, 5, 0);
-	wall.rotation.y = THREE.Math.degToRad(90);
-	scene.add(wall);
-
-	wall = new THREE.Mesh(myGeometry, myMaterial);
-	wall.position.set(0, 5, 25);
-	wall.rotation.y = THREE.Math.degToRad(0);
-	scene.add(wall);
-
-	wall = new THREE.Mesh(myGeometry, myMaterial);
-	wall.position.set(0, 5, -25);
-	wall.rotation.y = THREE.Math.degToRad(0);
-	scene.add(wall);
-
-	wall = new THREE.Mesh(myGeometry, myMaterial);
-	wall.position.set(-25, 5, 0);
-	wall.rotation.y = THREE.Math.degToRad(90);
-	scene.add(wall);
-	*/
-
-	//scene.fog = new THREE.FogExp2(0x232323, 0.025);
-
+	//Create moon
 	let moonGeometry = new THREE.SphereGeometry(3, 12, 12);
 	let moontexture = new THREE.TextureLoader().load("../assets/textures/moon.jpg");
 	let moonMaterial = new THREE.MeshBasicMaterial({ map: moontexture });
@@ -98,15 +63,67 @@ function createEnvironment(scene) {
 	moon.position.set(20, 13, 5);
 	scene.add(moon);
 
-	//addLights(scene);
 
 }
 
 function updateEnvironment(scene) {
   // myMesh.position.x += 0.01;
 	water.material.uniforms['time'].value += 1.0 / 60.0;
+	radiate(5);
+	//scene.add(glow);
+
+
 }
 
+function radiate(radiating) {
+	const time = Date.now() * 0.0025;
+	const d = radiating;
+
+	glowValue = Math.sin(time * 0.1) * d;
+}
+
+
+function createRectangularLight(color, intensity, width, height, position, lookAt) {
+	rectLight = new THREE.RectAreaLight(color, intensity, width, height);
+	rectLight.position.set(...position);
+	rectLight.lookAt(...lookAt);
+	// scene.add( rectLight );
+
+	var rectLightMesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(), new THREE.MeshBasicMaterial({ side: THREE.BackSide }));
+	rectLightMesh.scale.x = rectLight.width;
+	rectLightMesh.scale.y = rectLight.height;
+	rectLight.add(rectLightMesh);
+
+	var rectLightMeshBack = new THREE.Mesh(new THREE.PlaneBufferGeometry(), new THREE.MeshBasicMaterial({ color: 0x080808 }));
+	rectLightMesh.add(rectLightMeshBack);
+	return rectLight
+}
+
+function createLights() {
+	const CIRCLE_PERCENTAGE = 0.7
+	const offsetAngle = Math.PI * -1
+	const number = 15
+	const deltaAngle = 2 * Math.PI * CIRCLE_PERCENTAGE / number
+	const radius = 30
+
+	const lights = []
+
+	for (let i = 0; i < number; i++) {
+
+		const a = i * deltaAngle + offsetAngle
+		const h = 5
+		const w = 1
+		const x = radius * Math.cos(a)
+		const z = radius * Math.sin(a)
+		const y = h * 0.5 + 0.5
+
+		lights[i] = createRectangularLight(0xffffff, .5, w, h, [x, y, z], [0, y, 0])
+
+	}
+
+	return lights
+
+}
 
 function addLights(scene) {
 
@@ -145,8 +162,9 @@ function addWater(scene) {
 			}),
 			alpha: 1.0,
 			sunDirection: new THREE.Vector3(),
-			sunColor: 0xffffff,
-			waterColor: 0x001e0f,
+			sunColor: 0xff0000,
+			waterColor: 0xffffff,
+			//001e0f
 			distortionScale: 100,
 			fog: scene.fog !== undefined
 		}
@@ -265,3 +283,57 @@ function loadFbx(scene) {
 //	const light = new THREE.RectAreaLight(0xffffbb, 1.0, 5, 5);
 	//const helper = new RectAreaLightHelper(light);
 //	light.add(helper);
+
+
+
+
+
+/*const geometry = new THREE.PlaneGeometry(100, 100, 100);
+const material = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
+floor = new THREE.Mesh(geometry, material);
+floor.position.set(0, .01, 0);
+floor.rotation.x = THREE.Math.degToRad(90);
+scene.add(floor);
+
+floor = new THREE.Mesh(geometry, material);
+floor.position.set(0, 10, 0);
+floor.rotation.x = THREE.Math.degToRad(90);
+scene.add(floor);
+
+let myGeometry = new THREE.PlaneGeometry(50, 10, 10);
+let texture = new THREE.TextureLoader().load("../assets/textures/gradient.jpg");
+let myMaterial = new THREE.MeshBasicMaterial({ map: texture });
+wall = new THREE.Mesh(myGeometry, myMaterial);
+wall.position.set(25, 5, 0);
+wall.rotation.y = THREE.Math.degToRad(90);
+scene.add(wall);
+
+wall = new THREE.Mesh(myGeometry, myMaterial);
+wall.position.set(0, 5, 25);
+wall.rotation.y = THREE.Math.degToRad(0);
+scene.add(wall);
+
+wall = new THREE.Mesh(myGeometry, myMaterial);
+wall.position.set(0, 5, -25);
+wall.rotation.y = THREE.Math.degToRad(0);
+scene.add(wall);
+
+wall = new THREE.Mesh(myGeometry, myMaterial);
+wall.position.set(-25, 5, 0);
+wall.rotation.y = THREE.Math.degToRad(90);
+scene.add(wall);
+*/
+
+	//scene.fog = new THREE.FogExp2(0x232323, 0.025);
+
+
+
+/*const intensity = 2.5;
+const distance = 100;
+const decay = 2.0;
+
+const c1 = 0xff0040;*/
+	//light1 = new THREE.PointLight(c1, intensity, distance, decay);
+	//light1.add(new THREE.Mesh(sphere, new THREE.MeshPhongMaterial({ })));
+	//scene.add(light1);
+	//light1.position.set(0, 3, 0);

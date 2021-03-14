@@ -195,6 +195,7 @@ function initSocketConnection() {
 
     socket.on("addShape", function (data) {
         console.log('got addShape message:', data);
+        glScene.addShape(data.position);
     })
 }
 

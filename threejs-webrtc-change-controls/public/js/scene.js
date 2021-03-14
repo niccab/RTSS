@@ -127,7 +127,7 @@ class Scene {
 
       let _head = new THREE.Mesh(new THREE.SphereGeometry(1, 1, 1), videoMaterial);
 
-      const hsphere = new THREE.SphereGeometry(0.5, 16, 8);
+      let hsphere = new THREE.SphereGeometry(0.5, 16, 8);
       var customMaterial = new THREE.ShaderMaterial(
           {
               uniforms:
@@ -280,14 +280,36 @@ class Scene {
     ];
   }
 
+
+
+
     addShape(pos) {
-        let geo = new THREE.BoxGeometry(1, 2, 3);
-        let mat = new THREE.MeshPhongMaterial();
+       // let geo = new THREE.BoxGeometry(1, 2, 3);
+      //  let mat = new THREE.MeshPhongMaterial();
 
-        let mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(pos[0], pos[1], pos[2]);
+       // let mesh = new THREE.Mesh(geo, mat);
 
-        this.scene.add(mesh);
+        let hsphere = new THREE.SphereGeometry(0.5, 16, 8);
+        var customMaterial = new THREE.ShaderMaterial(
+            {
+                uniforms:
+                {
+                    "c": { type: "f", value: 3.0 },
+                    "p": { type: "f", value: 1.4 },
+                    glowColor: { type: "c", value: new THREE.Color(0xffff00) },
+                    viewVector: { type: "v3", value: new THREE.Vector3() }
+                },
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('fragmentShader').textContent,
+                side: THREE.FrontSide,
+                blending: THREE.AdditiveBlending,
+                transparent: false
+            });
+
+        let hglow = new THREE.Mesh(hsphere.clone(), customMaterial.clone());
+        hglow.scale.multiplyScalar(3.2);
+        hglow.position.set(pos[0], pos[1], pos[2]);
+        this.scene.add(hglow);
     }
 
 
@@ -371,7 +393,7 @@ class Scene {
 
       if (event.keyCode == 32) {
           console.log('send message');
-          socket.emit('addShape', { position: [this.playerGroup.x, this.playerGroup.y, this.playerGroup.z] });
+          socket.emit('addShape', { position: [this.playerGroup.position.x, this.playerGroup.position.y, this.playerGroup.position.z] });
   }
 
 

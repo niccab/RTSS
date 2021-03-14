@@ -2,10 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\public",
-    "\\public\\assets\\textures",
+    "\\public\\assets",
     "\\public\\js",
     "\\public\\js\\libs"
   ],
-  "SelectedNode": "\\public\\js\\scene.js",
   "PreviewInSolutionExplorer": false
 }
