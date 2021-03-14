@@ -163,7 +163,7 @@ function addWater(scene) {
 			alpha: 1.0,
 			sunDirection: new THREE.Vector3(),
 			sunColor: 0xff0000,
-			waterColor: 0xffffff,
+			waterColor: 0x000000,
 			//001e0f
 			distortionScale: 100,
 			fog: scene.fog !== undefined
